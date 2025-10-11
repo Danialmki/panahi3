@@ -1,0 +1,81 @@
+import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { s3Storage } from '@payloadcms/storage-s3'
+import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import path from 'path'
+import { buildConfig } from 'payload'
+import { fileURLToPath } from 'url'
+import sharp from 'sharp'
+
+import { Users } from './collections/Users'
+import { Media } from './collections/Media'
+import { Blogs } from './collections/Blogs'
+import { Courses } from './collections/Courses'
+
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
+
+export default buildConfig({
+  admin: {
+    user: Users.slug,
+    importMap: {
+      baseDir: path.resolve(dirname),
+    },
+  },
+  collections: [Users, Media, Blogs, Courses],
+  editor: lexicalEditor(),
+  secret: process.env.PAYLOAD_SECRET || '',
+  typescript: {
+    outputFile: path.resolve(dirname, 'payload-types.ts'),
+  },
+  cors: [
+    'http://localhost:3000', // Frontend URL
+    'http://localhost:3001', // Backend URL
+  ],
+  db: process.env.DATABASE_URI?.startsWith('postgresql://') 
+    ? postgresAdapter({
+        pool: {
+          connectionString: process.env.DATABASE_URI || '',
+        },
+      })
+    : mongooseAdapter({
+        url: process.env.DATABASE_URI || '',
+      }),
+  sharp,
+  plugins: [
+    payloadCloudPlugin(),
+    // Cloudflare R2 Storage (S3-compatible) with SSL fix
+    s3Storage({
+      config: {
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+        },
+        region: 'auto', // Cloudflare R2 uses 'auto' region
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        forcePathStyle: true, // Required for R2
+        s3ForcePathStyle: true,
+        signatureVersion: 'v4',
+        sslEnabled: true,
+        maxRetries: 3,
+        retryDelayOptions: {
+          base: 500,
+        },
+        httpOptions: {
+          timeout: 30000,
+          connectTimeout: 10000,
+        },
+        // Additional SSL/TLS configuration
+        useAccelerateEndpoint: false,
+        useDualstackEndpoint: false,
+        useGlobalEndpoint: false,
+      },
+      bucket: process.env.R2_BUCKET_NAME || '',
+      collections: {
+        media: true, // Enable R2 storage for media collection
+      },
+      prefix: '', // Remove prefix to match current file structure
+    }),
+  ],
+})
