@@ -140,29 +140,6 @@ pnpm build
 pnpm start
 ```
 
-## Features
-
-### Backend (Payload CMS)
-- ✅ User authentication and authorization
-- ✅ Role-based access control (Admin, Author)
-- ✅ Media management with Cloudflare R2 storage
-- ✅ Blog post management
-- ✅ Course management
-- ✅ Rich text editor (Lexical)
-- ✅ Image resizing and optimization
-- ✅ RESTful API
-- ✅ GraphQL API
-
-### Frontend
-- ✅ Modern, responsive UI
-- ✅ Dark/Light theme toggle
-- ✅ Course browsing and filtering
-- ✅ Blog post listing and reading
-- ✅ User dashboard
-- ✅ Authentication (Login/Signup)
-- ✅ Level assessment
-- ✅ Profile management
-
 ## API Endpoints
 
 ### Courses
