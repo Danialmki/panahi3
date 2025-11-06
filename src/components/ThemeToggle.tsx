@@ -35,7 +35,7 @@ export default function ThemeToggle() {
       variant="outline"
       size="icon"
       onClick={toggleTheme}
-      className="cursor-pointer"
+      className="cursor-pointer hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 dark:hover:border-accent transition-all"
     >
       {theme === "light" ? (
         <Moon className="h-4 w-4" />
@@ -46,4 +46,3 @@ export default function ThemeToggle() {
     </Button>
   );
 }
-

@@ -103,7 +103,7 @@ export default function Navbar() {
                   <span className="text-white font-bold text-lg">P</span>
                 </div>
                 <span className="ml-2 text-xl font-bold text-foreground">
-                  آکادمی پناه
+                  پناه اکادمی
                 </span>
               </Link>
             </div>
@@ -116,6 +116,29 @@ export default function Navbar() {
                   className="text-foreground hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:scale-105"
                 >
                   دوره‌ها
+                </Link>
+                <Link
+                  href="/#life-school"
+                  onClick={(e) => {
+                    // Smooth scroll if we're already on the homepage
+                    if (
+                      typeof window !== "undefined" &&
+                      window.location.pathname === "/"
+                    ) {
+                      e.preventDefault();
+                      const el = document.getElementById("life-school");
+                      if (el) {
+                        const y =
+                          el.getBoundingClientRect().top +
+                          window.pageYOffset -
+                          120;
+                        window.scrollTo({ top: y, behavior: "smooth" });
+                      }
+                    }
+                  }}
+                  className="text-foreground hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:scale-105"
+                >
+                  مدرسه زندگی
                 </Link>
                 <Link
                   href="/levels"
@@ -268,7 +291,7 @@ export default function Navbar() {
               <span className="text-white font-bold text-lg">P</span>
             </div>
             <span className="ml-2 text-xl font-bold text-foreground">
-              آکادمی پناه
+              پناه اکادمی
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -319,6 +342,42 @@ export default function Navbar() {
                   />
                 </svg>
                 دوره‌ها
+              </Link>
+              <Link
+                href="/#life-school"
+                onClick={(e) => {
+                  if (
+                    typeof window !== "undefined" &&
+                    window.location.pathname === "/"
+                  ) {
+                    e.preventDefault();
+                    const el = document.getElementById("life-school");
+                    if (el) {
+                      const y =
+                        el.getBoundingClientRect().top +
+                        window.pageYOffset -
+                        120;
+                      window.scrollTo({ top: y, behavior: "smooth" });
+                    }
+                  }
+                  closeMobileMenu();
+                }}
+                className="flex items-center px-4 py-3 text-foreground hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-all duration-200 hover:scale-105"
+              >
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 1.343-3 3v7h6v-7c0-1.657-1.343-3-3-3zM5 21h14"
+                  />
+                </svg>
+                مدرسه زندگی
               </Link>
               <Link
                 href="/levels"

@@ -37,25 +37,15 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock data for dashboard
+  // Dashboard stats - Empty by default, filled when user enrolls/buys courses
   const dashboardStats = {
-    coursesEnrolled: 5,
-    coursesCompleted: 2,
-    certificatesEarned: 1,
-    totalHours: 24,
-    currentStreak: 7,
+    coursesEnrolled: 0,
+    coursesCompleted: 0,
+    certificatesEarned: 0,
+    totalHours: 0,
   };
 
-  const recentCourses = [
-    {
-      id: 1,
-      title: "JavaScript Fundamentals",
-      progress: 75,
-      status: "In Progress",
-    },
-    { id: 2, title: "React Development", progress: 100, status: "Completed" },
-    { id: 3, title: "Node.js Backend", progress: 30, status: "In Progress" },
-  ];
+  const recentCourses: any[] = [];
 
   useEffect(() => {
     // Load user data from localStorage
@@ -196,13 +186,13 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-bold mb-2">
           خوش برگشتید، {userData.firstName || "یادگیرنده"}!
         </h2>
-        <p className="text-violet-100">
+        <p className="text-white/90">
           سفر یادگیری خود را با آکادمی پناه ادامه دهید
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
@@ -245,7 +235,7 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-green-600">
                 {dashboardStats.coursesCompleted}
               </div>
-              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-sm text-muted-foreground">تکمیل شده</div>
             </div>
           </CardContent>
         </Card>
@@ -255,7 +245,7 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-purple-600">
                 {dashboardStats.certificatesEarned}
               </div>
-              <div className="text-sm text-muted-foreground">Certificates</div>
+              <div className="text-sm text-muted-foreground">گواهینامه‌ها</div>
             </div>
           </CardContent>
         </Card>
@@ -265,17 +255,7 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold text-orange-600">
                 {dashboardStats.totalHours}
               </div>
-              <div className="text-sm text-muted-foreground">Hours Learned</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {dashboardStats.currentStreak}
-              </div>
-              <div className="text-sm text-muted-foreground">Day Streak</div>
+              <div className="text-sm text-muted-foreground">ساعت آموزش</div>
             </div>
           </CardContent>
         </Card>
@@ -288,38 +268,49 @@ export default function DashboardPage() {
           <CardDescription>پیشرفت یادگیری خود را پیگیری کنید</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentCourses.map((course) => (
-              <div
-                key={course.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium">{course.title}</h3>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-violet-600 h-2 rounded-full"
-                        style={{ width: `${course.progress}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {course.progress}%
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    course.status === "Completed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-violet-100 text-violet-800"
-                  }`}
+          {recentCourses.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                هنوز دوره‌ای ثبت‌نام نشده است
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                دوره‌های مورد علاقه خود را جستجو کنید و شروع به یادگیری کنید
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentCourses.map((course) => (
+                <div
+                  key={course.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
                 >
-                  {course.status}
-                </span>
-              </div>
-            ))}
-          </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium">{course.title}</h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-violet-600 h-2 rounded-full"
+                          style={{ width: `${course.progress}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {course.progress}%
+                      </span>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      course.status === "Completed"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-violet-100 text-violet-800"
+                    }`}
+                  >
+                    {course.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -333,21 +324,21 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button className="h-20 flex flex-col items-center justify-center space-y-2 cursor-pointer">
               <span className="text-lg">📚</span>
-              <span>Browse Courses</span>
+              <span>مرور دوره‌ها</span>
             </Button>
             <Button
               variant="outline"
               className="h-20 flex flex-col items-center justify-center space-y-2 cursor-pointer"
             >
               <span className="text-lg">🏆</span>
-              <span>View Certificates</span>
+              <span>مشاهده گواهینامه‌ها</span>
             </Button>
             <Button
               variant="outline"
               className="h-20 flex flex-col items-center justify-center space-y-2 cursor-pointer"
             >
               <span className="text-lg">📊</span>
-              <span>Progress Report</span>
+              <span>گزارش پیشرفت</span>
             </Button>
           </div>
         </CardContent>

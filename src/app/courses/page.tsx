@@ -203,16 +203,6 @@ export default function CoursesPage() {
                               height={250}
                               className="w-full h-48 object-cover"
                             />
-                            {course.originalPrice && (
-                              <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                {Math.round(
-                                  ((course.originalPrice - course.price) /
-                                    course.originalPrice) *
-                                    100
-                                )}
-                                % OFF
-                              </div>
-                            )}
                             <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
                               {course.level}
                             </div>

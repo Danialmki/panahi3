@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Instagram,
-  Facebook,
-  Twitter,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Linkedin } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -31,19 +24,17 @@ export default function Footer() {
               دوره‌های جامع و آموزش متخصص.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://instagram.com/panahacademy" target="_blank">
+              <Link href="https://instagram.com/panahacademy1" target="_blank">
                 <Button variant="ghost" size="icon" className="cursor-pointer">
                   <Instagram className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="https://facebook.com/panahacademy" target="_blank">
+              <Link
+                href="https://linkedin.com/in/panahacademy1"
+                target="_blank"
+              >
                 <Button variant="ghost" size="icon" className="cursor-pointer">
-                  <Facebook className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="https://twitter.com/panahacademy" target="_blank">
-                <Button variant="ghost" size="icon" className="cursor-pointer">
-                  <Twitter className="h-4 w-4" />
+                  <Linkedin className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -100,27 +91,23 @@ export default function Footer() {
                 <Phone className="h-4 w-4 text-violet-600" />
                 <div>
                   <p className="text-foreground font-medium">تلفن</p>
-                  <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                  <p className="text-muted-foreground">09909800818</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
                 <Mail className="h-4 w-4 text-violet-600 mt-1" />
                 <div>
                   <p className="text-foreground font-medium">ایمیل</p>
-                  <p className="text-muted-foreground">info@panahacademy.com</p>
+                  <p className="text-muted-foreground">
+                    panahacademyorg@gmial.com
+                  </p>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="h-4 w-4 text-violet-600 mt-1" />
                 <div>
                   <p className="text-foreground font-medium">آدرس</p>
-                  <p className="text-muted-foreground">
-                    123 Education Street
-                    <br />
-                    Learning District, LD 12345
-                    <br />
-                    United States
-                  </p>
+                  <p className="text-muted-foreground">فعلا نداریم : )</p>
                 </div>
               </div>
             </div>
@@ -134,7 +121,7 @@ export default function Footer() {
             <div className="space-y-2 text-muted-foreground">
               <div className="flex justify-between">
                 <span>شنبه - پنجشنبه</span>
-                <span>۹ صبح تا ۶ بعدازظهر</span>
+                <span>9 صبح تا 12 شب</span>
               </div>
               <div className="flex justify-between">
                 <span>جمعه</span>

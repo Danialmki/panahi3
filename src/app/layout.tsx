@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "آکادمی پناه",
-  description: "آموزش زبان با آکادمی پناه",
+  title: "پناه اکادمی",
+  description: "آموزش زبان با پناه اکادمی",
 };
 
 export default function RootLayout({
