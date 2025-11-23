@@ -135,8 +135,8 @@ export const Courses: CollectionConfig = {
           return { status: { equals: 'published' } }
         },
     create: ({ req: { user } }) => {
-      // Admin and authors can create
-      return user?.role === 'admin' || user?.role === 'author'
+      // Any authenticated user can create
+      return !!user
     },
     update: ({ req: { user } }) => {
       // Admin can update any

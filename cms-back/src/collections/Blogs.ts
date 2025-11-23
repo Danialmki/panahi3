@@ -125,48 +125,10 @@ export const Blogs: CollectionConfig = {
     ],
   },
   access: {
-    read: ({ req: { user } }) => {
-      // Public can read published blogs
-      const publicQuery = {
-        published: {
-          equals: true,
-        },
-      }
-
-      // Admin can read all
-      if (user?.role === 'admin') {
-        return true
-      }
-
-      // Author can read their own drafts + all published
-      if (user?.role === 'author') {
-        return {
-          or: [
-            publicQuery,
-            {
-              and: [
-                {
-                  author: {
-                    equals: user.id,
-                  },
-                },
-                {
-                  published: {
-                    equals: false,
-                  },
-                },
-              ],
-            },
-          ],
-        }
-      }
-
-      // Students and others can only read published
-      return publicQuery
-    },
+    read: () => true, // Allow everyone to read all blogs (can be restricted later)
     create: ({ req: { user } }) => {
-      // Admin and authors can create
-      return user?.role === 'admin' || user?.role === 'author'
+      // Any authenticated user can create
+      return !!user
     },
     update: ({ req: { user } }) => {
       // Admin can update any

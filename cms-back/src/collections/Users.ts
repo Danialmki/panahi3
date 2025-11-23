@@ -7,7 +7,13 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   access: {
-    create: () => true, // anyone can create
+    // Allow public signup but they won't have admin access
+    create: () => true,
+    // Restrict who can access the admin panel
+    admin: ({ req: { user } }) => {
+      // Only admin and author roles can access the admin panel
+      return user?.role === 'admin' || user?.role === 'author'
+    },
         read: ({ req: { user } }) => {
           if (user?.role === 'admin') {
             return true
@@ -67,4 +73,23 @@ export const Users: CollectionConfig = {
       },
     },
   ],
+  hooks: {
+    afterLogin: [
+      async ({ req, user }) => {
+        // Block students from accessing admin panel after successful login
+        if (user?.role === 'student') {
+          const referer = req.headers.get('referer') || ''
+          const origin = req.headers.get('origin') || ''
+          
+          // If the request is from admin panel, prevent access
+          if (referer.includes('/admin') || origin.includes(':3001')) {
+            throw new Error('Students do not have access to the admin panel. Please use the frontend at http://localhost:3000')
+          }
+        }
+        
+        return user
+      },
+    ],
+  },
 }
+

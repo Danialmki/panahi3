@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { fetchBlogPostBySlug, type BlogPost } from "@/lib/api";
 
 interface BlogData {
   id: string;
@@ -40,8 +42,79 @@ interface BlogData {
 export default function BlogPage() {
   const params = useParams();
   const blogId = params.blogId as string;
+  const [blog, setBlog] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock blog data - in a real app, this would come from an API
+  useEffect(() => {
+    const loadBlog = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch blog by slug from backend
+        const foundBlog = await fetchBlogPostBySlug(blogId);
+        
+        if (foundBlog) {
+          setBlog(foundBlog);
+        } else {
+          setError("Blog not found");
+        }
+      } catch (err) {
+        setError("Failed to load blog. Please try again later.");
+        console.error("Error loading blog:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (blogId) {
+      loadBlog();
+    }
+  }, [blogId]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600 mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading blog post...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (error || !blog) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-foreground mb-4">
+              Blog Post Not Found
+            </h1>
+            <p className="text-muted-foreground mb-8">
+              {error || "The blog post you're looking for doesn't exist or has been removed."}
+            </p>
+            <Link href="/blogs">
+              <Button className="bg-violet-600 hover:bg-violet-700 cursor-pointer">
+                Back to Blogs
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Mock blog data for additional fields not in API - in a real app, this would come from an API
   const blogData: Record<string, BlogData> = {
     "english-grammar-fundamentals": {
       id: "english-grammar-fundamentals",
@@ -296,208 +369,95 @@ export default function BlogPage() {
     },
   };
 
-  const blog = blogData[blogId];
-
-  if (!blog) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground mb-4">
-              Course Not Found
-            </h1>
-            <p className="text-muted-foreground mb-8">
-              The course you&apos;re looking for doesn&apos;t exist or has been
-              removed.
-            </p>
-            <Link href="/courses">
-              <Button className="bg-violet-600 hover:bg-violet-700 cursor-pointer">
-                Back to Courses
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const blogDetail = blogData[blogId] || blogData["english-grammar-fundamentals"]; // Fallback for structure
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
-          <Link href="/courses" className="hover:text-foreground">
-            Courses
+        <nav className="mb-8">
+          <Link href="/blogs" className="text-violet-600 hover:text-violet-700">
+            ← Back to Blogs
           </Link>
-          <span>/</span>
-          <span className="text-foreground">{blog.title}</span>
         </nav>
 
-        {/* Hero Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2">
+        {/* Article Header */}
+        <article>
+          <div className="mb-8">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              <span className="bg-violet-100 text-violet-800 px-3 py-1 rounded-full">
+                {blog.category}
+              </span>
+              <span>•</span>
+              <span>{new Date(blog.publishDate).toLocaleDateString()}</span>
+              <span>•</span>
+              <span>{blog.readTime}</span>
+            </div>
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              {blog.title}
+            </h1>
+            <p className="text-xl text-muted-foreground mb-6">
+              {blog.description}
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-lg font-bold text-violet-600">
+                    {blog.instructor.split(" ").map((n) => n[0]).join("")}
+                  </span>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{blog.instructor}</p>
+                  <p className="text-sm text-muted-foreground">Author</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Featured Image */}
+          <div className="mb-8">
             <Image
               src={blog.image}
               alt={blog.title}
               width={800}
               height={400}
-              className="w-full h-64 lg:h-80 object-cover rounded-lg"
+              className="w-full h-96 object-cover rounded-lg"
             />
           </div>
 
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">{blog.title}</CardTitle>
-                <CardDescription>{blog.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Price */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-3xl font-bold text-foreground">
-                    ${blog.price}
-                  </span>
-                  {blog.originalPrice && (
-                    <span className="text-lg text-muted-foreground line-through">
-                      ${blog.originalPrice}
-                    </span>
-                  )}
-                </div>
-
-                {/* Course Stats */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Duration:</span>
-                    <p className="font-medium">{blog.duration}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Level:</span>
-                    <p className="font-medium">{blog.level}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Lessons:</span>
-                    <p className="font-medium">{blog.lessons}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Students:</span>
-                    <p className="font-medium">
-                      {blog.students.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-yellow-500">⭐</span>
-                  <span className="font-medium">{blog.rating}</span>
-                  <span className="text-muted-foreground">
-                    ({blog.students.toLocaleString()} students)
-                  </span>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <Button className="w-full bg-violet-600 hover:bg-violet-700 cursor-pointer">
-                    Enroll Now - ${blog.price}
-                  </Button>
-                  <Button variant="outline" className="w-full cursor-pointer">
-                    Add to Wishlist
-                  </Button>
-                </div>
-
-                {/* Features */}
-                <div>
-                  <h4 className="font-medium mb-2">Whats included:</h4>
-                  <ul className="space-y-1 text-sm text-muted-foreground">
-                    {blog.features.map((feature, index) => (
-                      <li key={index} className="flex items-center space-x-2">
-                        <span className="text-green-500">✓</span>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Course Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {/* Course Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle>About This Course</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: blog.content }}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Curriculum */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Course Curriculum</CardTitle>
-                <CardDescription>
-                  {blog.lessons} lessons • {blog.duration}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {blog.curriculum.map((week, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <h4 className="font-medium mb-2">
-                        Week {week.week}: {week.title}
-                      </h4>
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        {week.topics.map((topic, topicIndex) => (
-                          <li
-                            key={topicIndex}
-                            className="flex items-center space-x-2"
-                          >
-                            <span className="text-violet-500">•</span>
-                            <span>{topic}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Article Content */}
+          <div className="prose prose-lg max-w-none mb-12">
+            <p className="lead">{blog.excerpt}</p>
+            <p>{blog.description}</p>
           </div>
 
-          {/* Instructor Info */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Instructor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl font-bold text-violet-600">
-                      {blog.instructor
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
-                  </div>
-                  <h4 className="font-medium">{blog.instructor}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Last updated: {blog.lastUpdated}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {blog.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+              >
+                #{tag}
+              </span>
+            ))}
           </div>
-        </div>
+
+          {/* Share Section */}
+          <div className="border-t border-b py-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Share this article:</span>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">Twitter</Button>
+                <Button variant="outline" size="sm">Facebook</Button>
+                <Button variant="outline" size="sm">LinkedIn</Button>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
       <Footer />
     </div>

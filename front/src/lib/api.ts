@@ -522,6 +522,51 @@ export async function fetchCourseById(id: string): Promise<Course | null> {
   }
 }
 
+export async function fetchCourseBySlug(slug: string): Promise<Course | null> {
+  try {
+    // Fetch from Payload CMS backend by slug
+    const response = await fetch(`${API_BASE_URL}/courses?where[slug][equals]=${slug}&depth=2`);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.docs && data.docs.length > 0) {
+      const course = data.docs[0];
+      return {
+        id: parseInt(course.id.slice(-6), 16) || Math.floor(course.id.charCodeAt(0) * course.id.charCodeAt(1) % 1000),
+        title: course.title,
+        description: course.summary,
+        price: course.price,
+        originalPrice: course.price * 1.5,
+        image: course.thumbnail?.url ? 
+          (course.thumbnail.url.startsWith('http') ? course.thumbnail.url : 
+           course.thumbnail.url.startsWith('/api/media/file/') ? 
+             `https://pub-33cbcf611d814aada8a113182c7e9cf7.r2.dev/${course.thumbnail.url.replace('/api/media/file/', '')}` : 
+             `https://pub-33cbcf611d814aada8a113182c7e9cf7.r2.dev/${course.thumbnail.url}`) 
+          : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=250&fit=crop",
+        duration: course.duration || "8 weeks",
+        level: "Beginner",
+        lessons: course.lessons || 24,
+        students: course.students || Math.floor((course.id.charCodeAt(0) + course.id.charCodeAt(1)) % 1000) + 100,
+        rating: course.rating || 4.5,
+        blogId: course.slug,
+        language: "English",
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn("Failed to fetch course by slug from backend, using mock data:", error);
+    
+    // Fallback to mock data
+    const course = mockCourses.find((c) => c.blogId === slug);
+    return course || null;
+  }
+}
+
 export async function fetchBlogPosts(category?: string): Promise<BlogPost[]> {
   try {
     // Fetch from Payload CMS backend with depth to include related media
@@ -606,6 +651,69 @@ export async function fetchBlogPostById(id: string): Promise<BlogPost | null> {
   }
 }
 
+export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  try {
+    // Fetch from Payload CMS backend by slug
+    const response = await fetch(`${API_BASE_URL}/blogs?where[slug][equals]=${slug}&depth=2`);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.docs && data.docs.length > 0) {
+      const blog = data.docs[0];
+      
+      // Extract text from Lexical editor content
+      let contentText = '';
+      if (blog.content?.root?.children) {
+        contentText = blog.content.root.children
+          .map((child: any) => {
+            if (child.children) {
+              return child.children.map((textNode: any) => textNode.text || '').join('');
+            }
+            return '';
+          })
+          .join(' ');
+      }
+      
+      return {
+        id: blog.slug,
+        title: blog.title,
+        description: contentText.substring(0, 150) + (contentText.length > 150 ? '...' : ''),
+        excerpt: contentText.substring(0, 100) + (contentText.length > 100 ? '...' : ''),
+        image: blog.cover?.url ? 
+          (blog.cover.url.startsWith('http') ? blog.cover.url : 
+           blog.cover.url.startsWith('/api/media/file/') ? 
+             `https://pub-33cbcf611d814aada8a113182c7e9cf7.r2.dev/${blog.cover.url.replace('/api/media/file/', '')}` : 
+             `https://pub-33cbcf611d814aada8a113182c7e9cf7.r2.dev/${blog.cover.url}`) 
+          : "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=250&fit=crop",
+        price: 49.99,
+        originalPrice: 99.99,
+        duration: blog.duration || "8 weeks",
+        level: "Beginner",
+        lessons: blog.lessons || 24,
+        students: blog.students || Math.floor((blog.id.charCodeAt(0) + blog.id.charCodeAt(1)) % 1000) + 100,
+        rating: blog.rating || 4.5,
+        instructor: blog.author?.fullName || "Unknown Author",
+        publishDate: blog.publishedAt || blog.createdAt,
+        readTime: "5 min read",
+        category: "General",
+        tags: ["blog", "learning"],
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn("Failed to fetch blog by slug from backend, using mock data:", error);
+    
+    // Fallback to mock data
+    const blog = mockBlogPosts.find((b) => b.id === slug);
+    return blog || null;
+  }
+}
+
 // Utility function to check if API is available
 export async function checkApiHealth(): Promise<boolean> {
   try {
@@ -617,4 +725,126 @@ export async function checkApiHealth(): Promise<boolean> {
   } catch (error) {
     return false;
   }
+}
+
+// Authentication functions
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignupData {
+  email: string;
+  password: string;
+  fullName: string;
+  role?: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+    role: string;
+  };
+  token: string;
+  exp: number;
+}
+
+export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/users/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(credentials),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Login failed");
+  }
+
+  return await response.json();
+}
+
+export async function signup(data: SignupData): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/users`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...data,
+      role: data.role || "student",
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Signup failed");
+  }
+
+  return await response.json();
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/users/logout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Logout failed");
+  }
+
+  // Clear local storage
+  localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("authToken");
+}
+
+export async function getCurrentUser(): Promise<AuthResponse["user"] | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data.user;
+  } catch (error) {
+    console.error("Failed to get current user:", error);
+    return null;
+  }
+}
+
+export function isAuthenticated(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("isLoggedIn") === "true";
+}
+
+export function getUserData() {
+  if (typeof window === "undefined") return null;
+  
+  return {
+    email: localStorage.getItem("userEmail"),
+    name: localStorage.getItem("userName"),
+    id: localStorage.getItem("userId"),
+    role: localStorage.getItem("userRole"),
+  };
 }

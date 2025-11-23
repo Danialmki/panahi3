@@ -69,21 +69,49 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Call Payload CMS API to authenticate user
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const response = await fetch(`${API_URL}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important for cookies
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-      // For demo purposes, we'll just redirect to dashboard
-      // In a real app, you'd handle authentication here
-      console.log("Login successful:", formData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Login error:", errorData);
+        
+        // Handle specific error messages
+        if (response.status === 401) {
+          throw new Error("Invalid email or password. Please check your credentials.");
+        }
+        
+        throw new Error(errorData.message || "Login failed");
+      }
 
-      // Set authentication state in localStorage for demo purposes
+      const userData = await response.json();
+      console.log("Login successful:", userData);
+
+      // Store authentication data in localStorage
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", formData.email);
+      localStorage.setItem("userEmail", userData.user.email);
+      localStorage.setItem("userName", userData.user.fullName);
+      localStorage.setItem("userId", userData.user.id);
+      localStorage.setItem("userRole", userData.user.role);
+      localStorage.setItem("authToken", userData.token);
 
       router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      setErrors({ general: "Login failed. Please try again." });
+      setErrors({ 
+        general: error instanceof Error ? error.message : "Login failed. Please try again." 
+      });
     } finally {
       setIsLoading(false);
     }

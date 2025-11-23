@@ -87,7 +87,8 @@ export default function SignupPage() {
 
     try {
       // Call Payload CMS API to create user
-      const response = await fetch("http://localhost:3001/api/users", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+      const response = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,11 +120,30 @@ export default function SignupPage() {
       const userData = await response.json();
       console.log("Registration successful:", userData);
 
-      // Set authentication state in localStorage
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", formData.email);
-      localStorage.setItem("userName", `${formData.firstName} ${formData.lastName}`);
-      localStorage.setItem("userId", userData.doc.id);
+      // Automatically log in after successful registration
+      const loginResponse = await fetch(`${API_URL}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        
+        // Set authentication state in localStorage
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userEmail", loginData.user.email);
+        localStorage.setItem("userName", loginData.user.fullName);
+        localStorage.setItem("userId", loginData.user.id);
+        localStorage.setItem("userRole", loginData.user.role);
+        localStorage.setItem("authToken", loginData.token);
+      }
 
       router.push("/dashboard");
     } catch (error) {

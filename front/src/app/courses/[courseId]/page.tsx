@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { fetchCoursesByLevel, type Course } from "@/lib/api";
+import { fetchCourseBySlug, type Course } from "@/lib/api";
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -29,9 +29,8 @@ export default function CourseDetailPage() {
         setLoading(true);
         setError(null);
         
-        // Fetch all courses and find the one with matching blogId (which is actually the course slug)
-        const courses = await fetchCoursesByLevel("all", "all");
-        const foundCourse = courses.find(c => c.blogId === courseId);
+        // Fetch course by slug from backend
+        const foundCourse = await fetchCourseBySlug(courseId);
         
         if (foundCourse) {
           setCourse(foundCourse);
