@@ -62,6 +62,34 @@ S3_SECRET=6f77bbb3a29154b390c8cdc284373480cb89fec02be29670b611f21cbbeb183a
 UPLOADTHING_TOKEN=EfKQNr_mQph0aRH_S6Lt3MnESJKEdkn3XVFUAhYh
 ```
 
+
+NEW:
+# Payload CMS Configuration
+PAYLOAD_SECRET=c2027ef19e31df281c0f94766349e4a52da7de19b6f157cc5a7bdd3a7411b5d8
+
+# Database Configuration
+# Set your MongoDB Atlas connection string below. This was provided by you.
+# Note: do not commit this file to a public repository. Keep `.env` in .gitignore.
+DATABASE_URI=mongodb+srv://db1234:g7Pala2XCdkotfWU@cluster0.getncnm.mongodb.net/?appName=Cluster0
+
+# Cloudflare R2 Storage Configuration (S3-compatible)
+S3_ACCESS_KEY_ID=your-r2-access-key-id
+S3_SECRET=your-r2-secret-access-key
+S3_BUCKET=your-r2-bucket-name
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+R2_PUBLIC_URL=https://your-domain.com
+
+# Next.js Configuration
+NEXT_PUBLIC_SERVER_URL=http://localhost:3001
+PORT=3001
+
+# Development Configuration
+NODE_ENV=development
+
+# (Optional) Node options used when running via scripts
+NODE_OPTIONS=--no-deprecation
+
+
 ### Frontend Environment (.env.local in danial/)
 
 ```env
